@@ -36,9 +36,9 @@ class AuthController extends WxController
         $user = Auth::guard('wx')->user();
         return $this->success([
             'nickName' => $user->nickname,
-            'avatar'   => $user->avatar,
-            'gender'   => $user->gender,
-            'mobile'   => $user->mobile
+            'avatar' => $user->avatar,
+            'gender' => $user->gender,
+            'mobile' => $user->mobile
         ]);
     }
 
@@ -50,8 +50,8 @@ class AuthController extends WxController
     public function profile()
     {
         $nickname = $this->verifyString('nickname', null);
-        $avatar   = $this->verifyString('avatar', null);
-        $gender   = $this->verifyString('gender', null);
+        $avatar = $this->verifyString('avatar', null);
+        $gender = $this->verifyString('gender', null);
 
         /** @var User $user */
         $user = $this->user();
@@ -78,10 +78,10 @@ class AuthController extends WxController
      */
     public function reset()
     {
-        $mobile   = $this->verifyString('mobile');
-        $code     = $this->verifyString('code');
+        $mobile = $this->verifyString('mobile');
+        $code = $this->verifyString('code');
         $password = $this->verifyString('password');
-        $isPass   = UserServices::getInstance()->checkCaptcha($mobile, $code);
+        $isPass = UserServices::getInstance()->checkCaptcha($mobile, $code);
         if (!$isPass) {
             return $this->fail(CodeResponse::AUTH_CAPTCHA_UNMATCH);
         }
@@ -89,7 +89,7 @@ class AuthController extends WxController
         if (is_null($user)) {
             return $this->fail(CodeResponse::AUTH_MOBILE_UNREGISTERED);
         }
-        $password       = Hash::make($password);
+        $password = Hash::make($password);
         $user->password = $password;
         return $user->save() ? $this->success() : $this->fail(CodeResponse::UPDATED_FAIL);
     }
@@ -108,9 +108,9 @@ class AuthController extends WxController
     public function register(Request $request)
     {
         $username = $this->verifyString('username');
-        $password = $this->verifyId('password');
-        $mobile   = $this->verifyId('mobile');
-        $code     = $this->verifyId('code');
+        $password = $this->verifyString('password');
+        $mobile = $this->verifyId('mobile');
+        $code = $this->verifyId('code');
 
         if (empty($username) || empty($password) || empty($mobile) || empty($code)) {
             return $this->fail(CodeResponse::PARAM_ILLEGAL);
@@ -139,24 +139,24 @@ class AuthController extends WxController
         //验证验证码
         UserServices::getInstance()->checkCaptcha($mobile, $code);
 
-        $user                  = new User();
-        $user->username        = $username;
-        $user->password        = Hash::make($password);
-        $user->mobile          = $mobile;
-        $user->avatar          = $avatarUrl;
-        $user->nickname        = $username;
+        $user = new User();
+        $user->username = $username;
+        $user->password = Hash::make($password);
+        $user->mobile = $mobile;
+        $user->avatar = $avatarUrl;
+        $user->nickname = $username;
         $user->last_login_time = Carbon::now()->toDateTimeString();
-        $user->last_login_ip   = $request->getClientIp();
-        $user->add_time        = Carbon::now()->toDateTimeString();
-        $user->update_time     = Carbon::now()->toDateTimeString();
+        $user->last_login_ip = $request->getClientIp();
+        $user->add_time = Carbon::now()->toDateTimeString();
+        $user->update_time = Carbon::now()->toDateTimeString();
         $user->save();
 
         $token = Auth::login($user);
         //TODO 新用户发券
         return $this->success([
-            'token'    => $token,
+            'token' => $token,
             'userInfo' => [
-                'nickName'  => $username,
+                'nickName' => $username,
                 'avatarUrl' => $avatarUrl
             ]
         ]);
@@ -179,7 +179,7 @@ class AuthController extends WxController
             return $this->fail(CodeResponse::AUTH_MOBILE_REGISTERED);
         }
 
-        $lock = Cache::add('register_captcha_lock_' . $mobile, 1, 60);
+        $lock = Cache::add('register_captcha_lock_'.$mobile, 1, 60);
 
         if (!$lock) {
             return $this->fail(CodeResponse::AUTH_CAPTCHA_FREQUENCY);
@@ -205,7 +205,7 @@ class AuthController extends WxController
     public function login(Request $request)
     {
         $username = $this->verifyString('username');
-        $password = $this->verifyId('password');
+        $password = $this->verifyString('password');
 
         $user = UserServices::getInstance()->getByUsername($username);
 
@@ -220,7 +220,7 @@ class AuthController extends WxController
         }
 
         $user->last_login_time = now()->toDateTimeString();
-        $user->last_login_ip   = $request->getClientIp();
+        $user->last_login_ip = $request->getClientIp();
 
         if (!$user->save()) {
             return $this->fail(CodeResponse::UPDATED_FAIL);
@@ -229,9 +229,9 @@ class AuthController extends WxController
         $token = Auth::login($user);
 
         return $this->success([
-            'token'    => $token,
+            'token' => $token,
             'userInfo' => [
-                'nickName'  => $username,
+                'nickName' => $username,
                 'avatarUrl' => $user->avatar
             ]
         ]);
